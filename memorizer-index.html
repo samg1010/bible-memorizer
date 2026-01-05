@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bible Verse Memorizer Tools</title>
+  <meta name="description" content="Free mobile-friendly Bible verse memorization apps in different translations."/>
+  
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --light-bg: #f8fafc;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f0f7ff, #e0eaff);
+      color: #1e293b;
+      min-height: 100vh;
+      padding: clamp(20px, 5vw, 40px);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    h1 {
+      font-size: clamp(2rem, 8vw, 3rem);
+      color: var(--primary);
+      margin-bottom: 0.5em;
+    }
+    p {
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      color: #475569;
+      margin-bottom: 2em;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .tool-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .tool-card:hover {
+      transform: translateY(-8px);
+    }
+    .tool-card h2 {
+      color: var(--primary);
+      margin-bottom: 0.8em;
+      font-size: clamp(1.5rem, 5vw, 1.8rem);
+    }
+    .tool-card p {
+      margin-bottom: 1.5em;
+      font-size: 1rem;
+    }
+    a.button {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    a.button:hover {
+      background: #2563eb;
+    }
+    footer {
+      margin-top: 4rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bible Verse Memorizer</h1>
+    <p>Free, mobile-friendly tools to help you memorize Scripture. Choose your preferred Bible translation below and start practicing today!</p>
+    
+    <div class="tools">
+      <div class="tool-card">
+        <h2>ESV Edition</h2>
+        <p>English Standard Version – accurate and literal translation with 30 popular verses.</p>
+        <a href="ESV-bible-memorization.html" class="button">Open ESV Memorizer</a>
+      </div>
+      
+      <div class="tool-card">
+        <h2>CEV Edition</h2>
+        <p>Contemporary English Version – clear and easy-to-read modern English with 30 verses.</p>
+        <a href="CEV-bible-memorization.html" class="button">Open CEV Memorizer</a>
+      </div>
+    </div>
+    
+    <footer>
+      <p>Open source • No ads • Works offline after loading • Hosted on GitHub Pages</p>
+      <p>Add more translations by forking the repo!</p>
+    </footer>
+  </div>
+</body>
+</html>
