@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <title>CEV Verse Memorizer - Mobile Friendly</title>
+  
+  <meta name="theme-color" content="#3b82f6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --gray: #6b7280;
+      --light-bg: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f0f7ff, #e0eaff);
+      color: #1e293b;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: clamp(12px, 4vw, 20px);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: clamp(1rem, 5vw, 2rem);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 6vw, 2.2rem);
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 0.6em;
+    }
+
+    .progress {
+      text-align: center;
+      color: #64748b;
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+      margin-bottom: 1.5rem;
+    }
+
+    .phase {
+      background: var(--light-bg);
+      padding: clamp(1rem, 4vw, 1.6rem);
+      border-radius: 12px;
+      margin: 1.5rem 0;
+      border: 1px solid #e2e8f0;
+    }
+
+    .reference {
+      font-weight: bold;
+      color: var(--primary);
+      font-size: clamp(1.2rem, 4.5vw, 1.35rem);
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+
+    .verse {
+      font-size: clamp(1.05rem, 4vw, 1.25rem);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 1rem;
+      font-size: clamp(1rem, 3.8vw, 1.15rem);
+      line-height: 1.6;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      font-family: inherit;
+      margin-top: 0.8rem;
+      resize: vertical;
+      -webkit-appearance: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 1.8rem 0;
+    }
+
+    button {
+      padding: clamp(0.8rem, 3.5vw, 1rem) clamp(1.2rem, 5vw, 1.8rem);
+      font-size: clamp(1rem, 4vw, 1.1rem);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-width: 130px;
+      touch-action: manipulation;
+    }
+
+    .btn-start   { background: var(--primary); color: white; }
+    .btn-submit  { background: var(--success); color: white; }
+    .btn-retry   { background: var(--warning); color: white; }
+    .btn-change  { background: var(--gray); color: white; }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .result {
+      padding: clamp(1.2rem, 4vw, 1.6rem);
+      border-radius: 12px;
+      background: #fefce8;
+      border: 1px solid #fef08a;
+      text-align: center;
+    }
+
+    .accuracy-big {
+      font-size: clamp(2.4rem, 10vw, 3.2rem);
+      font-weight: bold;
+      margin: 0.3em 0 0.2em;
+      color: var(--success);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>CEV Verse Memorizer</h1>
+  <div class="progress" id="progress">Verse 1/30 • Attempt 1</div>
+
+  <div id="readPhase" class="phase">
+    <span class="reference" id="refRead"></span>
+    <div class="verse" id="verseRead"></div>
+  </div>
+
+  <div id="typePhase" class="phase hidden">
+    <strong>Type from memory:</strong>
+    <textarea id="input" placeholder="Start typing here..." autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+  </div>
+
+  <div id="resultPhase" class="phase hidden">
+    <div class="result" id="resultContent"></div>
+  </div>
+
+  <div class="controls">
+    <button id="mainBtn" class="btn-start">Start</button>
+    <button id="changeVerseBtn" class="btn-change">Change Verse</button>
+  </div>
+</div>
+
+<script>
+  // 30 popular verses in the Contemporary English Version (CEV)
+  const verses = [
+    { ref: "John 3:16", text: "God loved the people of this world so much that he gave his only Son, so that everyone who has faith in him will have eternal life and never really die." },
+    { ref: "Psalm 23:1", text: "You, LORD, are my shepherd. I will never be in need." },
+    { ref: "Philippians 4:13", text: "Christ gives me the strength to face anything." },
+    { ref: "Romans 8:28", text: "We know that God is always at work for the good of everyone who loves him. They are the ones God has chosen for his purpose." },
+    { ref: "Jeremiah 29:11", text: "I will bless you with a future full of hope—a future of success, not of suffering." },
+    { ref: "Proverbs 3:5-6", text: "With all your heart you must trust the LORD and not your own judgment. Always let him lead you, and he will clear the road for you to follow." },
+    { ref: "Isaiah 40:31", text: "But those who trust the LORD will find new strength. They will be strong like eagles soaring upward on wings; they will walk and run without getting tired." },
+    { ref: "Ephesians 2:8-9", text: "You were saved by faith in God, who treats us much better than we deserve. This is God's gift to you, and not anything you have done on your own. It isn't something you have earned, so there is nothing you can brag about." },
+    { ref: "Matthew 6:33", text: "But more than anything else, put God's work first and do what he wants. Then the other things will be yours as well." },
+    { ref: "Psalm 46:10", text: "Our God says, 'Calm down, and learn that I am God! All nations on earth will honor me.'" },
+    { ref: "Joshua 1:9", text: "I've commanded you to be strong and brave. Don't ever be afraid or discouraged! I am the LORD your God, and I will be there to help you wherever you go." },
+    { ref: "Romans 12:2", text: "Don't be like the people of this world, but let God change the way you think. Then you will know how to do everything that is good and pleasing to him." },
+    { ref: "1 Corinthians 13:4-7", text: "Love is kind and patient, never jealous, boastful, proud, or rude. Love isn't selfish or quick tempered. It doesn't keep a record of wrongs that others do. Love rejoices in the truth, but not in evil. Love is always supportive, loyal, hopeful, and trusting." },
+    { ref: "Psalm 119:105", text: "Your word is a lamp that gives light wherever I walk." },
+    { ref: "Galatians 5:22-23", text: "God's Spirit makes us loving, happy, peaceful, patient, kind, good, faithful, gentle, and self-controlled. There is no law against behaving in any of these ways." },
+    { ref: "John 14:6", text: "I am the way, the truth, and the life!' Jesus answered. 'Without me, no one can go to the Father.'" },
+    { ref: "Hebrews 11:1", text: "Faith makes us sure of what we hope for and gives us proof of what we cannot see." },
+    { ref: "2 Timothy 3:16", text: "Everything in the Scriptures is God's Word. All of it is useful for teaching and helping people and for correcting them and showing them how to live." },
+    { ref: "Psalm 37:4", text: "Do what the LORD wants, and he will give you your heart's desire." },
+    { ref: "Isaiah 41:10", text: "Don't be afraid. I am with you. Don't tremble with fear. I am your God. I will make you strong, as I protect you with my arm and give you victories." },
+    { ref: "Matthew 11:28", text: "If you are tired from carrying heavy burdens, come to me and I will give you rest." },
+    { ref: "Romans 6:23", text: "Sin pays off with death. But God's gift is eternal life given by Jesus Christ our Lord." },
+    { ref: "Philippians 4:6-7", text: "Don't worry about anything, but pray about everything. With thankful hearts offer up your prayers and requests to God. Then, because you belong to Christ Jesus, God will bless you with peace that no one can completely understand. And this peace will control the way you think and feel." },
+    { ref: "John 10:10", text: "A thief comes only to rob, kill, and destroy. I came so that everyone would have life, and have it in its fullest." },
+    { ref: "Psalm 139:14", text: "I praise you because you are wonderful and amazing. All you do is marvelous. I know this very well." },
+    { ref: "Ephesians 6:12", text: "We are not fighting against humans. We are fighting against forces and authorities and rulers of darkness and powers in the spiritual world." },
+    { ref: "James 1:5", text: "If any of you need wisdom, you should ask God, and it will be given to you. God is generous and won't correct you for asking." },
+    { ref: "1 Thessalonians 5:16-18", text: "Always be joyful and never stop praying. Whatever happens, keep thanking God because of Jesus Christ. This is what God wants you to do." },
+    { ref: "Colossians 3:23", text: "Whatever you do, work at it with all your heart, as though you were working for the Lord and not for people." },
+    { ref: "Hebrews 13:8", text: "Jesus Christ never changes! He is the same yesterday, today, and forever." }
+  ];
+
+  let currentVerseIndex = 0;
+  let currentAttempt = 1;
+  let currentVerse = null;
+
+  const progressEl = document.getElementById('progress');
+  const refReadEl = document.getElementById('refRead');
+  const verseReadEl = document.getElementById('verseRead');
+  const readPhase = document.getElementById('readPhase');
+  const typePhase = document.getElementById('typePhase');
+  const resultPhase = document.getElementById('resultPhase');
+  const inputEl = document.getElementById('input');
+  const resultContentEl = document.getElementById('resultContent');
+  const mainBtn = document.getElementById('mainBtn');
+  const changeVerseBtn = document.getElementById('changeVerseBtn');
+
+  function loadNewVerse() {
+    currentVerse = verses[currentVerseIndex];
+    refReadEl.textContent = currentVerse.ref;
+    verseReadEl.textContent = currentVerse.text;
+    progressEl.textContent = `Verse ${currentVerseIndex + 1}/${verses.length} • Attempt ${currentAttempt}`;
+    
+    readPhase.classList.remove('hidden');
+    typePhase.classList.add('hidden');
+    resultPhase.classList.add('hidden');
+    inputEl.value = '';
+    mainBtn.textContent = 'Next';
+    mainBtn.className = 'btn-submit';
+  }
+
+  function startMemorization() {
+    readPhase.classList.add('hidden');
+    typePhase.classList.remove('hidden');
+    resultPhase.classList.add('hidden');
+    inputEl.focus();
+    mainBtn.textContent = 'Check';
+    mainBtn.className = 'btn-submit';
+  }
+
+  function normalize(str) {
+    return str.toLowerCase()
+              .replace(/[.,;:!?"'()—–-]/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+  }
+
+  function checkVerse() {
+    const userText = normalize(inputEl.value);
+    const originalText = normalize(currentVerse.text);
+
+    const userWords = userText.split(' ');
+    const originalWords = originalText.split(' ');
+    
+    let correct = 0;
+    for (let i = 0; i < Math.min(userWords.length, originalWords.length); i++) {
+      if (userWords[i] === originalWords[i]) correct++;
+    }
+
+    const accuracy = originalWords.length === 0 ? 0 : Math.round((correct / originalWords.length) * 100);
+
+    let message = `<div class="accuracy-big">${accuracy}%</div>`;
+    if (accuracy === 100) {
+      message += `<p>Perfect! 🎉 Well done!</p>`;
+    } else if (accuracy >= 80) {
+      message += `<p>Great job! Almost there.</p>`;
+    } else {
+      message += `<p>Keep practicing!</p>`;
+    }
+    message += `<p><strong>Reference:</strong> ${currentVerse.ref}<br><em>${currentVerse.text}</em></p>`;
+
+    resultContentEl.innerHTML = message;
+
+    typePhase.classList.add('hidden');
+    resultPhase.classList.remove('hidden');
+    mainBtn.textContent = 'Retry';
+    mainBtn.className = 'btn-retry';
+  }
+
+  function retryOrNext() {
+    if (mainBtn.textContent === 'Retry') {
+      currentAttempt++;
+      loadNewVerse();
+    }
+  }
+
+  mainBtn.addEventListener('click', () => {
+    if (mainBtn.textContent === 'Start') {
+      loadNewVerse();
+    } else if (mainBtn.textContent === 'Next') {
+      startMemorization();
+    } else if (mainBtn.textContent === 'Check') {
+      checkVerse();
+    } else if (mainBtn.textContent === 'Retry') {
+      retryOrNext();
+    }
+  });
+
+  changeVerseBtn.addEventListener('click', () => {
+    currentVerseIndex = (currentVerseIndex + 1) % verses.length;
+    currentAttempt = 1;
+    loadNewVerse();
+    mainBtn.textContent = 'Next';
+    mainBtn.className = 'btn-submit';
+  });
+
+  // Initial state
+  readPhase.classList.add('hidden');
+  mainBtn.textContent = 'Start';
+  mainBtn.className = 'btn-start';
+</script>
+
+</body>
+</html>
