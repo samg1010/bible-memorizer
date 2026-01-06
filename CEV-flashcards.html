@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <title>Bible Flashcards (CEV)</title>
+  
+  <meta name="theme-color" content="#3b82f6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+      --gray: #6b7280;
+      --light-bg: #f8fafc;
+      --card-bg: white;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; font-family:system-ui, sans-serif; background:linear-gradient(to bottom, #f0f7ff, #e0eaff); color:#1e293b; }
+    body { min-height:100vh; padding:clamp(12px,4vw,20px); line-height:1.5; }
+    .container { max-width:900px; margin:0 auto; background:var(--card-bg); border-radius:24px; padding:clamp(1.5rem,6vw,2.5rem); box-shadow:0 20px 50px rgba(0,0,0,0.12); }
+    h1 { font-size:clamp(1.8rem,7vw,2.5rem); color:var(--primary); text-align:center; margin-bottom:0.6em; font-weight:700; }
+    .download-container { text-align:center; margin-bottom:2rem; }
+    .stats { display:flex; justify-content:space-around; background:var(--light-bg); padding:1rem; border-radius:16px; margin-bottom:2rem; font-size:clamp(0.9rem,3vw,1rem); transition:all 0.4s; }
+    .stat { text-align:center; }
+    .stat-number { font-size:1.4em; font-weight:bold; color:var(--primary); }
+    .flashcard { perspective:1000px; height:clamp(300px,60vh,450px); margin:2rem auto; position:relative; }
+    .card-inner { position:relative; width:100%; height:100%; text-align:center; transition:transform 0.6s cubic-bezier(0.68,-0.55,0.27,1.55); transform-style:preserve-3d; cursor:pointer; }
+    .flashcard.flipped .card-inner { transform:rotateY(180deg); }
+    .card-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; background:white; border-radius:20px; padding:clamp(2rem,8vw,3rem); box-shadow:0 15px 40px rgba(0,0,0,0.15); display:flex; flex-direction:column; justify-content:center; align-items:center; border:2px solid #e2e8f0; overflow:auto; }
+    .card-back { transform:rotateY(180deg); }
+    .reference { font-weight:bold; color:var(--primary); font-size:clamp(1.4rem,5vw,1.8rem); margin-bottom:1rem; }
+    .verse { font-size:clamp(1.2rem,4.5vw,1.5rem); line-height:1.7; white-space:pre-wrap; word-break:break-word; max-width:100%; }
+    .hint { font-size:clamp(1rem,3.5vw,1.2rem); color:var(--gray); margin-top:1.5rem; }
+    .rating-buttons { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    .rating-btn { padding:clamp(0.8rem,3vw,1rem) 1.5rem; border:none; border-radius:12px; font-size:clamp(0.95rem,3.5vw,1.1rem); font-weight:600; cursor:pointer; transition:all 0.2s; min-width:80px; touch-action:manipulation; }
+    .btn-again { background:var(--danger); color:white; }
+    .btn-hard   { background:#f59e0b; color:white; }
+    .btn-good   { background:var(--success); color:white; }
+    .btn-easy   { background:var(--primary); color:white; }
+    .rating-btn:active { transform:scale(0.95); }
+    .controls { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    button { padding:clamp(0.8rem,3vw,1rem) clamp(1.2rem,4vw,1.6rem); font-size:clamp(0.95rem,3.5vw,1.1rem); border:none; border-radius:12px; cursor:pointer; transition:all 0.2s; min-width:110px; touch-action:manipulation; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-secondary { background:var(--gray); color:white; }
+    button:active { transform:scale(0.98); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Bible Flashcards (CEV)</h1>
+  
+  <div class="download-container">
+    <button id="downloadBtn" class="btn-primary">Download App (.html)</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-number" id="cardCount">30</div><div>Total Cards</div></div>
+    <div class="stat"><div class="stat-number" id="mastered">0</div><div>Mastered</div></div>
+    <div class="stat"><div class="stat-number" id="streak">0</div><div>Current Streak</div></div>
+  </div>
+
+  <div id="flashcard" class="flashcard">
+    <div class="card-inner">
+      <div class="card-face">
+        <div class="reference" id="refFront"></div>
+        <div class="hint">Tap card or "Flip" to reveal</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="reference" id="refBack"></div>
+        <div class="verse" id="verseBack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rating-buttons hidden" id="ratingBtns">
+    <button class="rating-btn btn-again" data-rating="1">Again</button>
+    <button class="rating-btn btn-hard" data-rating="2">Hard</button>
+    <button class="rating-btn btn-good" data-rating="3">Good</button>
+    <button class="rating-btn btn-easy" data-rating="4">Easy</button>
+  </div>
+
+  <div class="controls">
+    <button id="flipBtn" class="btn-primary">Flip</button>
+    <button id="resetBtn" class="btn-secondary">Reset Progress</button>
+  </div>
+</div>
+
+<script>
+// ============== CONFIGURATION ==============
+const MASTERY_THRESHOLD = 3;  // Number of "Good/Easy" reviews needed to master a card
+// ===========================================
+
+const verses = [
+  { ref: "John 3:16", text: "God loved the people of this world so much that he gave his only Son, so that everyone who has faith in him will have eternal life and never really die." },
+  { ref: "Psalm 23:1", text: "You, Lord, are my shepherd. I will never be in need." },
+  { ref: "Philippians 4:13", text: "Christ gives me the strength to face anything." },
+  { ref: "Romans 8:28", text: "We know that God is always at work for the good of everyone who loves him. They are the ones God has chosen for his purpose." },
+  { ref: "Jeremiah 29:11", text: "I have plans to give you a future filled with hope—a future of success, not of suffering." },
+  { ref: "Proverbs 3:5-6", text: "With all your heart you must trust the Lord and not your own judgment. Always let him lead you, and he will clear the road for you to follow." },
+  { ref: "Isaiah 40:31", text: "But those who trust the Lord will find new strength. They will be strong like eagles soaring upward on wings; they will run and not get tired; they will walk and not become weak." },
+  { ref: "Ephesians 2:8-9", text: "God saved you by his gift of undeserved grace. It is through faith alone that you are saved. This is not something you did on your own, and so you cannot take credit for it. It is a gift from God." },
+  { ref: "Matthew 6:33", text: "But more than anything else, put God's work first and do what he wants. Then the other things will be yours as well." },
+  { ref: "Psalm 46:10", text: "Our God says, 'Calm down, and learn that I am God! All nations on earth will honor me.'" },
+  { ref: "Joshua 1:9", text: "I have told you to be strong and brave. Don't ever be afraid or discouraged! I am the Lord your God, and I will be there to help you wherever you go." },
+  { ref: "Romans 12:2", text: "Don't copy the behavior and customs of this world, but let God transform you into a new person by changing the way you think. Then you will learn to know God's will for you, which is good and pleasing and perfect." },
+  { ref: "1 Corinthians 13:4-7", text: "Love is patient and kind, never jealous, boastful, proud, or rude. Love isn't selfish or quick tempered. It doesn't keep record of wrongs that others do. Love rejoices in the truth, but not in evil. Love is always supportive, loyal, hopeful, and trusting." },
+  { ref: "Psalm 119:105", text: "Your word is a lamp that gives light wherever I walk." },
+  { ref: "Galatians 5:22-23", text: "God's Spirit makes us loving, happy, peaceful, patient, kind, good, faithful, gentle, and self-controlled. There is no law against behaving in any of these ways." },
+  { ref: "John 14:6", text: "Jesus answered, 'I am the way, the truth, and the life. The only way to the Father is through me.'" },
+  { ref: "Hebrews 11:1", text: "Faith makes us sure of what we hope for and gives us proof of what we cannot see." },
+  { ref: "2 Timothy 3:16", text: "Everything in the Scriptures is God's Word. All of it is useful for teaching and helping people and for correcting them and showing them how to live." },
+  { ref: "Psalm 37:4", text: "Take delight in the Lord, and he will give you your heart's desires." },
+  { ref: "Isaiah 41:10", text: "Don't be afraid. I am with you. Don't tremble with fear. I am your God. I will make you strong, as I protect you with my arm and give you victories." },
+  { ref: "Matthew 11:28", text: "If you are tired from carrying heavy burdens, come to me and I will give you rest." },
+  { ref: "Romans 6:23", text: "Sin pays off with death. But God's gift is eternal life given to us because of the way our Lord Jesus Christ has saved us." },
+  { ref: "Philippians 4:6-7", text: "Don't worry about anything, but pray about everything. With thankful hearts offer your prayers and requests to God. Then, because you belong to Christ Jesus, God will bless you with peace that no one can completely understand. And this peace will control the way you think and feel." },
+  { ref: "John 10:10", text: "A thief has only one thing in mind—he wants to rob, kill, and destroy. But I came so that everyone would have life, and have it in its fullest." },
+  { ref: "Psalm 139:14", text: "I praise you because of the wonderful way you created me. Everything you do is marvelous! I know that very well." },
+  { ref: "Ephesians 6:12", text: "We are not fighting against humans. We are fighting against forces and authorities and against rulers of darkness and evil powers in the heavens." },
+  { ref: "James 1:5", text: "If any of you need wisdom, ask God, and it will be given to you. God is generous and won't correct you for asking." },
+  { ref: "1 Thessalonians 5:16-18", text: "Always be joyful and never stop praying. Whatever happens, keep thanking God because of Jesus Christ. This is what God wants you to do." },
+  { ref: "Colossians 3:23", text: "Whatever you do, work at it with all your heart, as though you were working for the Lord and not merely for people." },
+  { ref: "Hebrews 13:8", text: "Jesus Christ is the same yesterday, today, and forever." }
+];
+let cards = verses.map((v, i) => ({id: i, ref: v.ref, text: v.text, strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false}));
+let streak = 0;
+let isFlipped = false;
+
+const els = {
+  flashcard:  document.getElementById('flashcard'),
+  cardCount:  document.getElementById('cardCount'),
+  mastered:   document.getElementById('mastered'),
+  streak:     document.getElementById('streak'),
+  refFront:   document.getElementById('refFront'),
+  refBack:    document.getElementById('refBack'),
+  verseBack:  document.getElementById('verseBack'),
+  ratingBtns: document.getElementById('ratingBtns'),
+  flipBtn:    document.getElementById('flipBtn'),
+  resetBtn:   document.getElementById('resetBtn'),
+  downloadBtn:document.getElementById('downloadBtn')
+};
+
+function saveProgress() {
+  localStorage.setItem('bibleFlashcardsCEV', JSON.stringify({cards, streak}));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem('bibleFlashcardsCEV');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      // Backward compatibility
+      cards = (data.cards || verses.map((v,i)=>({id:i, ref:v.ref, text:v.text, strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false})))
+        .map(c => ({...c, goodReviews: c.goodReviews ?? 0}));
+      streak = Number(data.streak) || 0;
+    } catch(e) {
+      console.error("Failed to load progress", e);
+    }
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const masteredCount = cards.filter(c => c.mastered).length;
+  els.cardCount.textContent = verses.length;
+  els.mastered.textContent  = masteredCount;
+  els.streak.textContent    = streak;
+  
+  // Visual flash
+  const statsEl = document.querySelector('.stats');
+  statsEl.style.backgroundColor = '#dcfce7';
+  setTimeout(() => statsEl.style.backgroundColor = '', 800);
+}
+
+function getNextCard() {
+  const now = Date.now();
+  let due = cards.filter(c => c.due <= now && !c.mastered);
+  if (!due.length) due = cards.filter(c => !c.mastered);
+  if (!due.length) due = cards;
+  return due[Math.floor(Math.random() * due.length)];
+}
+
+function showCard(card) {
+  if (!card) return;
+  els.refFront.textContent = card.ref;
+  els.refBack.textContent  = card.ref;
+  els.verseBack.textContent = card.text;
+  els.flashcard.classList.remove('flipped');
+  isFlipped = false;
+  els.ratingBtns.classList.add('hidden');
+  els.flipBtn.textContent = 'Flip';
+}
+
+function flipCard(e) {
+  if (e) e.stopPropagation();
+  isFlipped = !isFlipped;
+  els.flashcard.classList.toggle('flipped', isFlipped);
+  els.flipBtn.textContent = isFlipped ? 'Flip Back' : 'Flip';
+  els.ratingBtns.classList.toggle('hidden', !isFlipped);
+}
+
+function rateCard(rating, e) {
+  if (e) e.stopPropagation();
+
+  const card = cards.find(c => c.ref === els.refFront.textContent);
+  if (!card) {
+    showCard(getNextCard());
+    return;
+  }
+
+  card.reviews += 1;
+
+  // Update interval based on rating
+  if (rating === 1) {           // Again
+    card.interval = 1;
+    streak = 0;                 // Reset streak on failure
+  } else if (rating === 2) {    // Hard
+    card.interval = Math.max(1, Math.round(card.interval * 1.2));
+    // streak unchanged
+  } else {                      // Good (3) or Easy (4)
+    card.goodReviews += 1;
+    streak += 1;                 // *** THIS IS THE KEY CHANGE: streak advances on every Good/Easy ***
+    card.interval = Math.round(card.interval * (rating === 4 ? 2.0 : 1.8));
+  }
+
+  card.due = Date.now() + card.interval * 24 * 60 * 60 * 1000;
+
+  // Mastery check
+  if (card.goodReviews >= MASTERY_THRESHOLD && !card.mastered) {
+    card.mastered = true;
+  }
+
+  saveProgress();
+  updateStats();
+
+  setTimeout(() => showCard(getNextCard()), 700);
+}
+
+// Event Listeners
+els.flipBtn.addEventListener('click', flipCard);
+
+els.flashcard.addEventListener('click', (e) => {
+  if (e.target.closest('.rating-buttons') || e.target.closest('.controls') || e.target.closest('button')) return;
+  flipCard(e);
+});
+
+document.querySelectorAll('.rating-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => rateCard(Number(btn.dataset.rating), e));
+});
+
+els.resetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (confirm('Reset all progress and streak?')) {
+    cards = verses.map((v,i)=>({id:i, ref:v.ref, text:v.text, strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false}));
+    streak = 0;
+    saveProgress();
+    updateStats();
+    showCard(getNextCard());
+  }
+});
+
+els.downloadBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const html = document.documentElement.outerHTML;
+  const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bible-flashcards-cev-${date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Touch swipe (optional)
+let touchStartX = 0;
+els.flashcard.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive:true});
+els.flashcard.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 80) {
+    if (diff > 0) rateCard(3, e);  // swipe left → Good
+    else flipCard(e);              // swipe right → flip
+  }
+});
+
+// Start
+loadProgress();
+showCard(getNextCard());
+</script>
+</body>
+</html>
