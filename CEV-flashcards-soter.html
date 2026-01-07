@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <title>Bible Flashcards: Wesleyan Soteriology (CEV)</title>
+  
+  <meta name="theme-color" content="#3b82f6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+      --gray: #6b7280;
+      --light-bg: #f8fafc;
+      --card-bg: white;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; font-family:system-ui, sans-serif; background:linear-gradient(to bottom, #f0f7ff, #e0eaff); color:#1e293b; }
+    body { min-height:100vh; padding:clamp(12px,4vw,20px); line-height:1.5; }
+    .container { max-width:900px; margin:0 auto; background:var(--card-bg); border-radius:24px; padding:clamp(1.5rem,6vw,2.5rem); box-shadow:0 20px 50px rgba(0,0,0,0.12); }
+    h1 { font-size:clamp(1.8rem,7vw,2.5rem); color:var(--primary); text-align:center; margin-bottom:0.6em; font-weight:700; }
+    .download-container { text-align:center; margin-bottom:2rem; }
+    .stats { display:flex; justify-content:space-around; background:var(--light-bg); padding:1rem; border-radius:16px; margin-bottom:2rem; font-size:clamp(0.9rem,3vw,1rem); transition:all 0.4s; }
+    .stat { text-align:center; }
+    .stat-number { font-size:1.4em; font-weight:bold; color:var(--primary); }
+    .flashcard { perspective:1000px; height:clamp(300px,60vh,450px); margin:2rem auto; position:relative; }
+    .card-inner { position:relative; width:100%; height:100%; text-align:center; transition:transform 0.6s cubic-bezier(0.68,-0.55,0.27,1.55); transform-style:preserve-3d; cursor:pointer; }
+    .flashcard.flipped .card-inner { transform:rotateY(180deg); }
+    .card-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; background:white; border-radius:20px; padding:clamp(2rem,8vw,3rem); box-shadow:0 15px 40px rgba(0,0,0,0.15); display:flex; flex-direction:column; justify-content:center; align-items:center; border:2px solid #e2e8f0; overflow:auto; }
+    .card-back { transform:rotateY(180deg); }
+    .reference { font-weight:bold; color:var(--primary); font-size:clamp(1.4rem,5vw,1.8rem); margin-bottom:1rem; }
+    .verse { font-size:clamp(1.2rem,4.5vw,1.5rem); line-height:1.7; white-space:pre-wrap; word-break:break-word; max-width:100%; }
+    .explanation { font-size:clamp(1rem,3.5vw,1.15rem); color:#4b5563; margin-top:2rem; line-height:1.6; max-width:90%; }
+    .rating-buttons { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    .rating-btn { padding:clamp(0.8rem,3vw,1rem) 1.5rem; border:none; border-radius:12px; font-size:clamp(0.95rem,3.5vw,1.1rem); font-weight:600; cursor:pointer; transition:all 0.2s; min-width:80px; touch-action:manipulation; }
+    .btn-again { background:var(--danger); color:white; }
+    .btn-hard   { background:#f59e0b; color:white; }
+    .btn-good   { background:var(--success); color:white; }
+    .btn-easy   { background:var(--primary); color:white; }
+    .rating-btn:active { transform:scale(0.95); }
+    .controls { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    button { padding:clamp(0.8rem,3vw,1rem) clamp(1.2rem,4vw,1.6rem); font-size:clamp(0.95rem,3.5vw,1.1rem); border:none; border-radius:12px; cursor:pointer; transition:all 0.2s; min-width:110px; touch-action:manipulation; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-secondary { background:var(--gray); color:white; }
+    button:active { transform:scale(0.98); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Bible Flashcards: Wesleyan Soteriology (CEV)</h1>
+  
+  <div class="download-container">
+    <button id="downloadBtn" class="btn-primary">Download App (.html)</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-number" id="cardCount">30</div><div>Total Cards</div></div>
+    <div class="stat"><div class="stat-number" id="mastered">0</div><div>Mastered</div></div>
+    <div class="stat"><div class="stat-number" id="streak">0</div><div>Current Streak</div></div>
+  </div>
+
+  <div id="flashcard" class="flashcard">
+    <div class="card-inner">
+      <div class="card-face">
+        <div class="reference" id="refFront"></div>
+        <div class="hint">Tap card or "Flip" to reveal</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="reference" id="refBack"></div>
+        <div id="verseBack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rating-buttons hidden" id="ratingBtns">
+    <button class="rating-btn btn-again" data-rating="1">Again</button>
+    <button class="rating-btn btn-hard" data-rating="2">Hard</button>
+    <button class="rating-btn btn-good" data-rating="3">Good</button>
+    <button class="rating-btn btn-easy" data-rating="4">Easy</button>
+  </div>
+
+  <div class="controls">
+    <button id="flipBtn" class="btn-primary">Flip</button>
+    <button id="resetBtn" class="btn-secondary">Reset Progress</button>
+  </div>
+</div>
+
+<script>
+// ============== CONFIGURATION ==============
+const MASTERY_THRESHOLD = 3;
+// ===========================================
+
+const verses = [
+  { ref: "John 1:9", text: "The true light that shines on everyone was coming into the world.", explanation: "Prevenient Grace: Jesus, the true light, enlightens every person, enabling all to respond to God's call (a key Wesleyan text for universal enabling grace)." },
+  { ref: "Titus 2:11", text: "God has shown us undeserved grace by coming to save all people.", explanation: "Prevenient Grace: God's grace that brings salvation has appeared to all people, restoring free will and enabling response to the gospel (central verse in Wesleyan theology)." },
+  { ref: "John 12:32", text: "If I am lifted up above the earth, I will make everyone want to come to me.", explanation: "Prevenient Grace: Christ draws all people to Himself through His crucifixion, illustrating God's universal initiating grace." },
+  { ref: "Matthew 11:28", text: "If you are tired from carrying heavy burdens, come to me and I will give you rest.", explanation: "Prevenient Grace: Jesus invites all who are burdened, showing God's grace extends to everyone, enabling them to come." },
+  { ref: "Acts 17:30", text: "In the past, God forgave all this because people did not know what they were doing. But now he says that everyone everywhere must turn to him.", explanation: "Prevenient Grace / Universal Call: God now commands repentance from all, implying His grace enables such response universally." },
+  { ref: "Romans 2:4", text: "Do you really think God will punish others for their sins and not punish you for your own? Don't you realize how patient God is being with you? He is being patient because he wants you to turn back to him.", explanation: "Prevenient Grace: God's kindness leads people to repentance, working preveniently in hearts." },
+  { ref: "1 Timothy 2:4", text: "God wants everyone to be saved and to know the whole truth.", explanation: "God's Universal Desire: God wants all to be saved, supporting resistible grace and prevenient enabling." },
+  { ref: "2 Peter 3:9", text: "The Lord isn't slow about keeping his promises, as some people think he is. In fact, God is patient, because he wants everyone to turn from sin and no one to be lost.", explanation: "God's Universal Desire: God's patience desires repentance for all, not willing any perish." },
+  { ref: "Ezekiel 18:32", text: "I don't want anyone to die. So turn back to me and live!", explanation: "God's Universal Desire: God takes no pleasure in anyone's death but calls all to turn and live." },
+  { ref: "Matthew 23:37", text: "Jerusalem, Jerusalem! Your people have killed the prophets and have stoned the messengers who were sent to you. I have often wanted to gather your people, as a hen gathers her chicks under her wings. But you wouldn't let me.", explanation: "Resistible Grace: Jesus laments unwillingness, showing grace can be resisted." },
+  { ref: "Acts 7:51", text: "You stubborn and hardheaded people! You are always fighting against the Holy Spirit, just as your ancestors did.", explanation: "Resistible Grace: People can and do resist the Holy Spirit." },
+  { ref: "Hebrews 3:15", text: "The Scriptures say, 'If you hear God's voice today, don't be stubborn as in the past when you turned against him.'", explanation: "Resistible Grace: Warning against hardening hearts when hearing God's voice." },
+  { ref: "John 3:16", text: "God loved the people of this world so much that he gave his only Son, so that everyone who has faith in him will have eternal life and never really die.", explanation: "Justification by Faith: Salvation through believing in Christ, open to whoever responds." },
+  { ref: "Ephesians 2:8-9", text: "You were saved by faith in God, who treated you with undeserved grace. It was God's gift and not something you earned, so that no one can boast.", explanation: "Justification by Faith: Saved by grace through faith, not works." },
+  { ref: "Romans 5:1", text: "By faith we have been made acceptable to God. And now, because of our Lord Jesus Christ, we live at peace with God.", explanation: "Justification by Faith: Justification comes by faith, bringing peace with God." },
+  { ref: "1 Thessalonians 5:23-24", text: "I pray that God, who gives peace, will make you completely holy. And may your entire spirit, soul, and body be kept well until the coming of our Lord Jesus Christ. God is faithful, and he has called you to be partners with his Son, our Lord Jesus Christ.", explanation: "Entire Sanctification: Prayer for complete sanctification; God is faithful to accomplish it." },
+  { ref: "Hebrews 12:14", text: "Try to live at peace with everyone. And try to live free from sin, because anyone who keeps on sinning will not see the Lord.", explanation: "Sanctification / Holiness: Holiness is essential to see the Lord; we must pursue it." },
+  { ref: "Matthew 5:48", text: "You must be perfect, just as your Father in heaven is perfect.", explanation: "Christian Perfection: Command to be perfect (complete in love) as God is perfect." },
+  { ref: "Philippians 3:15", text: "All of us who are mature should think in this same way. And if you think differently about anything, God will make it clear to you.", explanation: "Christian Perfection: Mature believers attain this mindset of perfection." },
+  { ref: "1 John 4:17", text: "If we truly love others and live as Christ did in this world, we won't be worried about the day of judgment. A real love for others will make us more like him.", explanation: "Christian Perfection: Love perfected (matured) in us, making us like Christ." },
+  { ref: "Romans 8:16", text: "God's Spirit joins with our spirit to declare that we are God's children.", explanation: "Assurance: The Holy Spirit provides inward witness of our adoption." },
+  { ref: "1 John 5:13", text: "My dear friends, I am writing this to you, the people who believe in the name of the Son of God, so that you may know you have eternal life.", explanation: "Assurance: Believers can know they have eternal life." },
+  { ref: "Hebrews 10:14", text: "By a single offering he has perfected for all time those who are being sanctified.", explanation: "Sanctification / Perfection: Christ's offering perfects forever those being sanctified." },
+  { ref: "Philippians 1:6", text: "God is the one who began this good work in you, and I am certain that he won't stop before it is complete on the day that Christ Jesus returns.", explanation: "Perseverance: Confidence that God will complete His sanctifying work." },
+  { ref: "John 10:28-29", text: "I give them eternal life, and they will never perish. No one will snatch them out of my hand. My Father, who has given them to me, is greater than anyone, and no one can snatch them out of the Father's hand.", explanation: "Security in Christ: Believers are securely held; none can snatch them away." },
+  { ref: "1 Peter 1:5", text: "God will use his great power to protect you until the final day when he will bring you salvation that is ready to be revealed.", explanation: "Security / Perseverance: Guarded by God's power through faith." },
+  { ref: "Romans 8:38-39", text: "I am sure that nothing can separate us from God's love—not life or death, not angels or spirits, not the present or the future, or any powers, not height or depth, or anything else in all creation.", explanation: "Security in Christ: Nothing can separate believers from God's love." },
+  { ref: "Hebrews 6:4-6", text: "But what about people who turn away after they have already understood the truth and have been made holy by the Holy Spirit and have tasted the good things of heaven and shared in the power of the age to come? It is impossible to make them turn to God again, because they are nailing the Son of God to a cross again and holding him up to open shame.", explanation: "Possibility of Apostasy: Warning that true believers can fall away." },
+  { ref: "2 Peter 2:20-21", text: "If people escape the moral filth of this world through knowing our Lord and Savior Jesus Christ, but then get tangled up and overcome by it again, they are worse off than they were before. It would have been better for them not to have known the way of righteousness than, after knowing it, to turn their backs on the holy commandment that was handed on to them.", explanation: "Possibility of Apostasy: Those who escape through Christ but return are worse off." },
+  { ref: "1 John 3:9", text: "God's children cannot keep on being sinful, because they are from God.", explanation: "Sanctification: Those born of God do not persist in sin, as God's seed remains in them." }
+];
+
+// Initialize cards
+let cards = verses.map((v, i) => ({
+  id: i,
+  ref: v.ref,
+  text: v.text,
+  explanation: v.explanation || "",
+  strength: 1,
+  interval: 1,
+  due: 0,
+  reviews: 0,
+  goodReviews: 0,
+  mastered: false
+}));
+
+let streak = 0;
+let isFlipped = false;
+
+const els = {
+  flashcard:  document.getElementById('flashcard'),
+  cardCount:  document.getElementById('cardCount'),
+  mastered:   document.getElementById('mastered'),
+  streak:     document.getElementById('streak'),
+  refFront:   document.getElementById('refFront'),
+  refBack:    document.getElementById('refBack'),
+  verseBack:  document.getElementById('verseBack'),
+  ratingBtns: document.getElementById('ratingBtns'),
+  flipBtn:    document.getElementById('flipBtn'),
+  resetBtn:   document.getElementById('resetBtn'),
+  downloadBtn: document.getElementById('downloadBtn')
+};
+
+function saveProgress() {
+  localStorage.setItem('bibleFlashcardsCEV', JSON.stringify({cards, streak}));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem('bibleFlashcardsCEV');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      cards = (data.cards || verses.map((v,i) => ({
+        id:i, ref:v.ref, text:v.text, explanation:v.explanation||"", strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false
+      }))).map(c => ({...c, goodReviews: c.goodReviews ?? 0}));
+      streak = Number(data.streak) || 0;
+    } catch(e) {
+      console.error("Failed to load progress", e);
+    }
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const masteredCount = cards.filter(c => c.mastered).length;
+  els.cardCount.textContent = verses.length;
+  els.mastered.textContent  = masteredCount;
+  els.streak.textContent    = streak;
+
+  const statsEl = document.querySelector('.stats');
+  statsEl.style.backgroundColor = '#dcfce7';
+  setTimeout(() => statsEl.style.backgroundColor = '', 800);
+}
+
+function getNextCard() {
+  const now = Date.now();
+  let due = cards.filter(c => c.due <= now && !c.mastered);
+  if (!due.length) due = cards.filter(c => !c.mastered);
+  if (!due.length) due = cards;
+  return due[Math.floor(Math.random() * due.length)];
+}
+
+function showCard(card) {
+  if (!card) return;
+  els.refFront.textContent = card.ref;
+  els.refBack.textContent  = card.ref;
+
+  els.verseBack.innerHTML = `
+    <div class="verse">${card.text}</div>
+    ${card.explanation ? `<div class="explanation">${card.explanation}</div>` : ''}
+  `;
+
+  els.flashcard.classList.remove('flipped');
+  isFlipped = false;
+  els.ratingBtns.classList.add('hidden');
+  els.flipBtn.textContent = 'Flip';
+}
+
+function flipCard(e) {
+  if (e) e.stopPropagation();
+  isFlipped = !isFlipped;
+  els.flashcard.classList.toggle('flipped', isFlipped);
+  els.flipBtn.textContent = isFlipped ? 'Flip Back' : 'Flip';
+  els.ratingBtns.classList.toggle('hidden', !isFlipped);
+}
+
+function rateCard(rating, e) {
+  if (e) e.stopPropagation();
+
+  const card = cards.find(c => c.ref === els.refFront.textContent);
+  if (!card) {
+    showCard(getNextCard());
+    return;
+  }
+
+  card.reviews += 1;
+
+  if (rating === 1) {
+    card.interval = 1;
+    streak = 0;
+  } else if (rating === 2) {
+    card.interval = Math.max(1, Math.round(card.interval * 1.2));
+  } else {
+    card.goodReviews += 1;
+    streak += 1;
+    card.interval = Math.round(card.interval * (rating === 4 ? 2.0 : 1.8));
+  }
+
+  card.due = Date.now() + card.interval * 24 * 60 * 60 * 1000;
+
+  if (card.goodReviews >= MASTERY_THRESHOLD && !card.mastered) {
+    card.mastered = true;
+  }
+
+  saveProgress();
+  updateStats();
+
+  setTimeout(() => showCard(getNextCard()), 700);
+}
+
+// Event Listeners (unchanged)
+els.flipBtn.addEventListener('click', flipCard);
+
+els.flashcard.addEventListener('click', (e) => {
+  if (e.target.closest('.rating-buttons') || e.target.closest('.controls') || e.target.closest('button')) return;
+  flipCard(e);
+});
+
+document.querySelectorAll('.rating-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => rateCard(Number(btn.dataset.rating), e));
+});
+
+els.resetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (confirm('Reset all progress and streak?')) {
+    cards = verses.map((v,i) => ({
+      id:i, ref:v.ref, text:v.text, explanation:v.explanation||"", strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false
+    }));
+    streak = 0;
+    saveProgress();
+    updateStats();
+    showCard(getNextCard());
+  }
+});
+
+els.downloadBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const html = document.documentElement.outerHTML;
+  const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wesleyan-soteriology-cev-flashcards-${date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Touch swipe
+let touchStartX = 0;
+els.flashcard.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive:true});
+els.flashcard.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 80) {
+    if (diff > 0) rateCard(3, e);  // swipe left → Good
+    else flipCard(e);             // swipe right → flip
+  }
+});
+
+// Start
+loadProgress();
+showCard(getNextCard());
+</script>
+</body>
+</html>
