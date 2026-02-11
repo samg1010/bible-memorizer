@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <title>Bible Flashcards: Bridge Illustration Evangelism (ESV)</title>
+  
+  <meta name="theme-color" content="#3b82f6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+      --gray: #6b7280;
+      --light-bg: #f8fafc;
+      --card-bg: white;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; font-family:system-ui, sans-serif; background:linear-gradient(to bottom, #f0f7ff, #e0eaff); color:#1e293b; }
+    body { min-height:100vh; padding:clamp(12px,4vw,20px); line-height:1.5; }
+    .container { max-width:900px; margin:0 auto; background:var(--card-bg); border-radius:24px; padding:clamp(1.5rem,6vw,2.5rem); box-shadow:0 20px 50px rgba(0,0,0,0.12); }
+    h1 { font-size:clamp(1.8rem,7vw,2.5rem); color:var(--primary); text-align:center; margin-bottom:0.6em; font-weight:700; }
+    .download-container { text-align:center; margin-bottom:2rem; }
+    .stats { display:flex; justify-content:space-around; background:var(--light-bg); padding:1rem; border-radius:16px; margin-bottom:2rem; font-size:clamp(0.9rem,3vw,1rem); transition:all 0.4s; }
+    .stat { text-align:center; }
+    .stat-number { font-size:1.4em; font-weight:bold; color:var(--primary); }
+    .flashcard { perspective:1000px; height:clamp(300px,60vh,450px); margin:2rem auto; position:relative; }
+    .card-inner { position:relative; width:100%; height:100%; text-align:center; transition:transform 0.6s cubic-bezier(0.68,-0.55,0.27,1.55); transform-style:preserve-3d; cursor:pointer; }
+    .flashcard.flipped .card-inner { transform:rotateY(180deg); }
+    .card-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; background:white; border-radius:20px; padding:clamp(2rem,8vw,3rem); box-shadow:0 15px 40px rgba(0,0,0,0.15); display:flex; flex-direction:column; justify-content:flex-start; align-items:center; border:2px solid #e2e8f0; overflow:auto; }
+    .card-back { transform:rotateY(180deg); }
+    .reference { font-weight:bold; color:var(--primary); font-size:clamp(1.4rem,5vw,1.8rem); margin-bottom:1rem; }
+    .verse { font-size:clamp(1.2rem,4.5vw,1.5rem); line-height:1.7; white-space:pre-wrap; word-break:break-word; max-width:100%; }
+    .explanation { font-size:clamp(1rem,3.5vw,1.15rem); color:#4b5563; margin-top:2rem; line-height:1.6; max-width:90%; }
+    .rating-buttons { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    .rating-btn { padding:clamp(0.8rem,3vw,1rem) 1.5rem; border:none; border-radius:12px; font-size:clamp(0.95rem,3.5vw,1.1rem); font-weight:600; cursor:pointer; transition:all 0.2s; min-width:80px; touch-action:manipulation; }
+    .btn-again { background:var(--danger); color:white; }
+    .btn-hard   { background:#f59e0b; color:white; }
+    .btn-good   { background:var(--success); color:white; }
+    .btn-easy   { background:var(--primary); color:white; }
+    .rating-btn:active { transform:scale(0.95); }
+    .controls { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+    button { padding:clamp(0.8rem,3vw,1rem) clamp(1.2rem,4vw,1.6rem); font-size:clamp(0.95rem,3.5vw,1.1rem); border:none; border-radius:12px; cursor:pointer; transition:all 0.2s; min-width:110px; touch-action:manipulation; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-secondary { background:var(--gray); color:white; }
+    button:active { transform:scale(0.98); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Bible Flashcards: Bridge Illustration Evangelism (ESV)</h1>
+  
+  <div class="download-container">
+    <button id="downloadBtn" class="btn-primary">Download App (.html)</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-number" id="cardCount">0</div><div>Total Cards</div></div>
+    <div class="stat"><div class="stat-number" id="mastered">0</div><div>Mastered</div></div>
+    <div class="stat"><div class="stat-number" id="streak">0</div><div>Current Streak</div></div>
+  </div>
+
+  <div id="flashcard" class="flashcard">
+    <div class="card-inner">
+      <div class="card-face">
+        <div class="reference" id="refFront"></div>
+        <div class="hint">Tap card or "Flip" to reveal</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="reference" id="refBack"></div>
+        <div id="verseBack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rating-buttons hidden" id="ratingBtns">
+    <button class="rating-btn btn-again" data-rating="1">Again</button>
+    <button class="rating-btn btn-hard" data-rating="2">Hard</button>
+    <button class="rating-btn btn-good" data-rating="3">Good</button>
+    <button class="rating-btn btn-easy" data-rating="4">Easy</button>
+  </div>
+
+  <div class="controls">
+    <button id="flipBtn" class="btn-primary">Flip</button>
+    <button id="resetBtn" class="btn-secondary">Reset Progress</button>
+  </div>
+</div>
+
+<script>
+// ============== CONFIGURATION ==============
+const MASTERY_THRESHOLD = 3;
+// ===========================================
+
+const verses = [
+  { 
+    ref: "Bridge Step 1: God's Side", 
+    text: "God loves you and wants a relationship with you.\nJohn 3:16 – \"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.\"\nRomans 5:8 – \"but God shows his love for us in that while we were still sinners, Christ died for us.\"", 
+    explanation: "Start here: Draw 'GOD' on the right side. God desires connection and abundant life for us (John 10:10 implied in love)." 
+  },
+  { 
+    ref: "Bridge Step 2: Our Side (Sin)", 
+    text: "All have sinned and fall short of God's glory.\nRomans 3:23 – \"for all have sinned and fall short of the glory of God\"", 
+    explanation: "Draw 'US' or stick figure on left. Sin is turning away from God—universal problem separating us." 
+  },
+  { 
+    ref: "Bridge Step 3: The Gap (Separation)", 
+    text: "The wages of sin is death.\nRomans 6:23 – \"For the wages of sin is death, but the free gift of God is eternal life in Christ Jesus our Lord.\" (focus on first half)", 
+    explanation: "Draw wide chasm/gap between sides. Label 'SEPARATION' or 'DEATH'. Sin earns spiritual death—we can't cross on our own." 
+  },
+  { 
+    ref: "Bridge Step 4: Failed Attempts", 
+    text: "Our good works cannot bridge the gap.\nEphesians 2:8–9 – \"For by grace you have been saved through faith. And this is not your own doing; it is the gift of God, not a result of works, so that no one may boast.\"", 
+    explanation: "Draw broken ladders/dashed lines that don't reach. Religion, morality, deeds fall short—salvation is by grace, not works." 
+  },
+  { 
+    ref: "Bridge Step 5: God's Solution (The Cross)", 
+    text: "Christ died for us and bridges the gap.\nRomans 6:23 (second half) – \"...but the free gift of God is eternal life in Christ Jesus our Lord.\"\nRomans 5:8 (reinforce)", 
+    explanation: "Draw a large cross spanning the chasm. Jesus paid sin's penalty—His death provides the bridge to God." 
+  },
+  { 
+    ref: "Bridge Step 6: The Bridge is Jesus", 
+    text: "Jesus is the only way.\nJohn 14:6 – \"Jesus said to him, 'I am the way, and the truth, and the life. No one comes to the Father except through me.'\"", 
+    explanation: "Label cross 'JESUS CHRIST'. He lived perfectly, died for sins, rose again—unique bridge to restoration." 
+  },
+  { 
+    ref: "Bridge Step 7: Crossing by Faith", 
+    text: "Believe and receive Him.\nJohn 1:12 – \"But to all who did receive him, who believed in his name, he gave the right to become children of God\"", 
+    explanation: "Draw arrow/stick figure crossing on cross. Faith/trust in Jesus (not works) moves us to God's side—receive the free gift." 
+  },
+  { 
+    ref: "Bridge Step 8: Our Response", 
+    text: "Confess and call on the Lord.\nRomans 10:9 – \"if you confess with your mouth that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved.\"\nRomans 10:13 – \"everyone who calls on the name of the Lord will be saved.\"", 
+    explanation: "Invite personal response: Confess Jesus as Lord, believe in resurrection—call on Him to cross." 
+  },
+  { 
+    ref: "Bridge Step 9: Assurance on God's Side", 
+    text: "Peace, no condemnation, eternal security.\nRomans 5:1 – \"Therefore, since we have been justified by faith, we have peace with God through our Lord Jesus Christ.\"\nRomans 8:1 – \"There is therefore now no condemnation for those who are in Christ Jesus.\"", 
+    explanation: "Once crossed: Peace with God, freedom from judgment, unbreakable love (Romans 8:38–39 implied)." 
+  }
+];
+
+// Initialize cards
+let cards = verses.map((v, i) => ({
+  id: i,
+  ref: v.ref,
+  text: v.text,
+  explanation: v.explanation || "",
+  strength: 1,
+  interval: 1,
+  due: 0,
+  reviews: 0,
+  goodReviews: 0,
+  mastered: false
+}));
+
+let streak = 0;
+let isFlipped = false;
+
+const els = {
+  flashcard:  document.getElementById('flashcard'),
+  cardCount:  document.getElementById('cardCount'),
+  mastered:   document.getElementById('mastered'),
+  streak:     document.getElementById('streak'),
+  refFront:   document.getElementById('refFront'),
+  refBack:    document.getElementById('refBack'),
+  verseBack:  document.getElementById('verseBack'),
+  ratingBtns: document.getElementById('ratingBtns'),
+  flipBtn:    document.getElementById('flipBtn'),
+  resetBtn:   document.getElementById('resetBtn'),
+  downloadBtn: document.getElementById('downloadBtn')
+};
+
+function saveProgress() {
+  localStorage.setItem('bibleFlashcardsBridgeIllustration', JSON.stringify({cards, streak}));
+}
+
+function loadProgress() {
+  const saved = localStorage.getItem('bibleFlashcardsBridgeIllustration');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      cards = (data.cards || verses.map((v,i) => ({
+        id:i, ref:v.ref, text:v.text, explanation:v.explanation||"", strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false
+      }))).map(c => ({...c, goodReviews: c.goodReviews ?? 0}));
+      streak = Number(data.streak) || 0;
+    } catch(e) {
+      console.error("Failed to load progress", e);
+    }
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const masteredCount = cards.filter(c => c.mastered).length;
+  els.cardCount.textContent = verses.length;
+  els.mastered.textContent  = masteredCount;
+  els.streak.textContent    = streak;
+
+  const statsEl = document.querySelector('.stats');
+  statsEl.style.backgroundColor = '#dcfce7';
+  setTimeout(() => statsEl.style.backgroundColor = '', 800);
+}
+
+function getNextCard() {
+  const now = Date.now();
+  let due = cards.filter(c => c.due <= now && !c.mastered);
+  if (!due.length) due = cards.filter(c => !c.mastered);
+  if (!due.length) due = cards;
+  return due[Math.floor(Math.random() * due.length)];
+}
+
+function showCard(card) {
+  if (!card) return;
+  els.refFront.textContent = card.ref;
+  els.refBack.textContent  = card.ref;
+
+  els.verseBack.innerHTML = `
+    <div class="verse">${card.text.replace(/\n/g, '<br>')}</div>
+    ${card.explanation ? `<div class="explanation">${card.explanation}</div>` : ''}
+  `;
+
+  els.flashcard.classList.remove('flipped');
+  isFlipped = false;
+  els.ratingBtns.classList.add('hidden');
+  els.flipBtn.textContent = 'Flip';
+}
+
+function flipCard(e) {
+  if (e) e.stopPropagation();
+  isFlipped = !isFlipped;
+  els.flashcard.classList.toggle('flipped', isFlipped);
+  els.flipBtn.textContent = isFlipped ? 'Flip Back' : 'Flip';
+  els.ratingBtns.classList.toggle('hidden', !isFlipped);
+}
+
+function rateCard(rating, e) {
+  if (e) e.stopPropagation();
+
+  const card = cards.find(c => c.ref === els.refFront.textContent);
+  if (!card) {
+    showCard(getNextCard());
+    return;
+  }
+
+  card.reviews += 1;
+
+  if (rating === 1) {           // Again
+    card.interval = 1;
+    streak = 0;
+  } else if (rating === 2) {    // Hard
+    card.interval = Math.max(1, Math.round(card.interval * 1.2));
+  } else {                      // Good or Easy
+    card.goodReviews += 1;
+    streak += 1;
+    card.interval = Math.round(card.interval * (rating === 4 ? 2.0 : 1.8));
+  }
+
+  card.due = Date.now() + card.interval * 24 * 60 * 60 * 1000;
+
+  if (card.goodReviews >= MASTERY_THRESHOLD && !card.mastered) {
+    card.mastered = true;
+  }
+
+  saveProgress();
+  updateStats();
+
+  setTimeout(() => showCard(getNextCard()), 700);
+}
+
+// Event Listeners
+els.flipBtn.addEventListener('click', flipCard);
+
+els.flashcard.addEventListener('click', (e) => {
+  if (e.target.closest('.rating-buttons') || e.target.closest('.controls') || e.target.closest('button')) return;
+  flipCard(e);
+});
+
+document.querySelectorAll('.rating-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => rateCard(Number(btn.dataset.rating), e));
+});
+
+els.resetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (confirm('Reset all progress and streak?')) {
+    cards = verses.map((v,i) => ({
+      id:i, ref:v.ref, text:v.text, explanation:v.explanation||"", strength:1, interval:1, due:0, reviews:0, goodReviews:0, mastered:false
+    }));
+    streak = 0;
+    saveProgress();
+    updateStats();
+    showCard(getNextCard());
+  }
+});
+
+els.downloadBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const html = document.documentElement.outerHTML;
+  const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bridge-illustration-flashcards-${date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Touch swipe support
+let touchStartX = 0;
+els.flashcard.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive:true});
+els.flashcard.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 80) {
+    if (diff > 0) rateCard(3, e);  // swipe left → Good
+    else flipCard(e);             // swipe right → flip
+  }
+});
+
+// Start the app
+loadProgress();
+showCard(getNextCard());
+</script>
+</body>
+</html>
